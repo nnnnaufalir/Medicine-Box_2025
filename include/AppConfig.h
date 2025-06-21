@@ -4,8 +4,8 @@
 // --- Konfigurasi Aplikasi Umum ---
 
 // Konstanta untuk EMA Filter
-#define EMA_FILTER_ALPHA    0.8f // Nilai alpha untuk EMA filter (0.0f - 1.0f)
-                                 // Semakin kecil, semakin halus tapi lambat respon
+#define EMA_FILTER_ALPHA    0.8f // Nilai alpha untuk EMA filter (0.0f - 1.0f) // Semakin kecil, semakin halus tapi lambat respon
+#define EMA_FILTER_RESET   0.0f
 
 // Konstanta untuk KNN (contoh nilai awal, bisa disesuaikan nanti)
 #define KNN_K_VALUE         3    // Nilai 'K' untuk algoritma K-Nearest Neighbors
@@ -27,6 +27,7 @@
 #define EEPROM_ADDR_SCHEDULE    300 // Alamat awal untuk data jadwal obat
 
 // --- Toleransi (contoh, akan disesuaikan) ---
+#define WEIGHT_CALIBRATION  400.0f
 #define WEIGHT_TOLERANCE_MG     50  // Toleransi berat dalam miligram untuk deteksi obat
 
 

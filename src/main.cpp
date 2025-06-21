@@ -32,10 +32,10 @@ void setup() {
   // Set faktor kalibrasi awal. Ini HARUS disesuaikan setelah kalibrasi!
   // Anda bisa mulai dengan 1.0f dulu, nanti angkanya tidak realistis tapi bisa lihat perubahan.
   // Atau masukkan nilai perkiraan Anda dari kalibrasi sebelumnya.
-  myLoadCell.setCalibrationFactor(400.0f); // <<-- SESUAIKAN DENGAN PERKIRAAN FAKTOR KALIBRASI ANDA!
+  myLoadCell.setCalibrationFactor(WEIGHT_CALIBRATION); // <<-- SESUAIKAN DENGAN PERKIRAAN FAKTOR KALIBRASI ANDA!
 
   // Reset EMA filter dengan nilai 0 setelah tare
-  weightFilter.reset(0.0f);
+  weightFilter.reset(EMA_FILTER_RESET);
 
   // --- Buat FreeRTOS Task ---
   xTaskCreatePinnedToCore(
