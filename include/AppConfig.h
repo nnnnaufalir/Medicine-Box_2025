@@ -4,7 +4,7 @@
 // --- Konfigurasi Aplikasi Umum ---
 
 // Konstanta untuk EMA Filter
-#define EMA_FILTER_ALPHA    0.2f // Nilai alpha untuk EMA filter (0.0f - 1.0f)
+#define EMA_FILTER_ALPHA    0.8f // Nilai alpha untuk EMA filter (0.0f - 1.0f)
                                  // Semakin kecil, semakin halus tapi lambat respon
 
 // Konstanta untuk KNN (contoh nilai awal, bisa disesuaikan nanti)
