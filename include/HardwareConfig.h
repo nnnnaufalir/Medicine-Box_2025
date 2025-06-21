@@ -22,9 +22,9 @@
 #define PB1_PIN             39  // Push Button 1
 #define PB2_PIN             36  // Push Button 2
 
-// HX711 Load Cell
-#define HX711_SCK_PIN       14  // Serial Clock untuk HX711
-#define HX711_DT_PIN        13  // Data pin untuk HX711
+// HX711 Load Cell <--- INI BAGIAN YANG SAYA LUPAKAN SEBELUMNYA!
+#define HX711_SCK_PIN       14  // Serial Clock untuk HX711 (SCK)
+#define HX711_DT_PIN        13  // Data pin untuk HX711 (DOUT)
 
 // --- Konfigurasi Umum Hardware ---
 #define SERIAL_BAUD_RATE    115200 // Baud rate untuk Serial Monitor
