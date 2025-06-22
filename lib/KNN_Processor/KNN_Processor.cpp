@@ -1,12 +1,12 @@
-#include "KNN_Processor.h" // Include header kita sendiri
-#include <Arduino.h>       // Untuk Serial.println
-#include <algorithm>       // Untuk std::sort
-#include <map>             // Untuk std::map (untuk voting mayoritas)
-#include <cmath>           // Untuk std::abs (untuk jarak)
+#include "KNN_Processor.h" // Memasukkan header dari modul kita sendiri.
+#include <Arduino.h>       // Memasukkan pustaka Arduino, terutama untuk fungsi Serial.println.
+#include <algorithm>       // Memasukkan pustaka STL C++ 'algorithm', terutama untuk std::sort.
+#include <map>             // Memasukkan pustaka STL C++ 'map', untuk implementasi voting mayoritas.
+#include <cmath>           // Memasukkan pustaka C++ 'cmath', terutama untuk std::abs.
 
-// --- Definisi Dataset KNN Anda (Pindahkan dari kode lama Anda ke sini) ---
-// Ini akan menjadi dataset default yang dimuat saat inisialisasi KNN_Processor.
-// Nanti bisa dimodifikasi untuk dimuat dari EEPROM.
+// --- Definisi Dataset KNN Default ---
+// Ini adalah dataset awal yang akan digunakan jika tidak ada data lain yang dimuat.
+// Berisi pasangan berat dan jumlah obat.
 const KNN_DataPoint DEFAULT_KNN_DATASET[] = {
     // Jumlah Obat = 0 (Berat 0 - 1.3g)
     {0.2f, 0},
@@ -104,129 +104,142 @@ const KNN_DataPoint DEFAULT_KNN_DATASET[] = {
     {24.0f, 15},
     {24.8f, 15},
     {25.3f, 15}};
+// Menghitung ukuran dataset secara otomatis.
 const size_t DEFAULT_DATASET_SIZE = sizeof(DEFAULT_KNN_DATASET) / sizeof(DEFAULT_KNN_DATASET[0]);
+
+// --- Struktur Helper dan Comparator untuk Sorting ---
+// Struktur ini digunakan secara internal dalam metode classify()
+// untuk menyimpan jarak dan label tetangga, yang akan diurutkan.
+struct NeighborInfo
+{
+    float distance; // Jarak dari titik data yang diukur ke titik ini.
+    int label;      // Label (jumlah obat) dari titik data ini.
+};
+
+// Fungsi comparator ini digunakan oleh std::sort.
+// Ia mendefinisikan bagaimana dua objek NeighborInfo harus dibandingkan: berdasarkan jarak (asc).
+bool compareNeighbors(const NeighborInfo &a, const NeighborInfo &b)
+{
+    return a.distance < b.distance; // Mengurutkan dari jarak terkecil ke terbesar.
+}
 
 // --- Implementasi Kelas KNN_Processor ---
 
-// Helper struct untuk sorting
-struct NeighborInfo
-{
-    float distance;
-    int label;
-};
-
-// Comparator untuk std::sort
-bool compareNeighbors(const NeighborInfo &a, const NeighborInfo &b)
-{
-    return a.distance < b.distance;
-}
-
+// Konstruktor kelas. Dipanggil saat objek KNN_Processor dibuat.
 KNN_Processor::KNN_Processor(int k) : _k(k)
-{
+{ // Inisialisasi member _k dengan nilai 'k' yang diberikan.
     Serial.println("KNN_Processor: Modul KNN diinisialisasi.");
-    // Muat dataset default saat inisialisasi
+    // Memuat dataset default ke dalam '_dataset' (variabel member kelas).
     addDataPoints(DEFAULT_KNN_DATASET, DEFAULT_DATASET_SIZE);
     Serial.printf("KNN_Processor: Dataset default dimuat, ukuran: %d\n", _dataset.size());
 }
 
+// Menambahkan satu titik data ke _dataset.
 void KNN_Processor::addDataPoint(float weight, int pillCount)
 {
-    _dataset.push_back({weight, pillCount});
+    _dataset.push_back({weight, pillCount}); // Menambahkan KNN_DataPoint baru ke akhir vector _dataset.
     Serial.printf("KNN_Processor: Menambah data point - Berat: %.2f g, Jumlah: %d\n", weight, pillCount);
 }
 
+// Menambahkan banyak titik data dari array ke _dataset.
 void KNN_Processor::addDataPoints(const KNN_DataPoint data[], size_t size)
 {
     for (size_t i = 0; i < size; ++i)
-    {
-        _dataset.push_back(data[i]);
+    {                                // Loop melalui setiap elemen di array 'data'.
+        _dataset.push_back(data[i]); // Menambahkan setiap elemen ke _dataset.
     }
-    // Tidak mencetak per item, cukup setelah semua ditambahkan
 }
 
+// Metode inti untuk mengklasifikasikan berat yang diukur.
 int KNN_Processor::classify(float measuredWeight)
 {
+    // 1. Cek Dataset Kosong
     if (_dataset.empty())
-    {
+    { // Jika _dataset tidak memiliki elemen.
         Serial.println("KNN_Processor: Dataset kosong, tidak dapat mengklasifikasi.");
-        return -1; // Menunjukkan error atau tidak dapat mengklasifikasi
+        return -1; // Mengembalikan -1 sebagai indikasi error.
     }
 
-    // Sesuaikan K jika lebih besar dari dataset
-    int actualK = _k;
+    // 2. Sesuaikan Nilai K
+    int actualK = _k; // Menggunakan variabel lokal untuk K yang efektif.
     if (_k > _dataset.size())
-    {
-        actualK = _dataset.size();
+    {                              // Jika K yang diminta lebih besar dari jumlah data dalam dataset.
+        actualK = _dataset.size(); // Set K efektif sama dengan ukuran dataset.
         Serial.printf("KNN_Processor: K (%d) lebih besar dari dataset size (%d). Menggunakan K = dataset size.\n", _k, _dataset.size());
     }
 
-    // 1. Hitung jarak Euclidean untuk setiap titik data dalam dataset
-    std::vector<NeighborInfo> distances; // Pair: {jarak, pillCount}
+    // 3. Hitung Jarak ke Semua Titik Data
+    std::vector<NeighborInfo> distances; // Vector untuk menyimpan jarak dan label dari semua titik dataset.
+    distances.reserve(_dataset.size());  // Optimasi: alokasikan memori di awal
     for (const auto &point : _dataset)
-    {
-        float dist = calculateEuclideanDistance(measuredWeight, point.weight);
-        distances.push_back({dist, point.pillCount});
+    {                                                                          // Loop melalui setiap 'point' dalam '_dataset'.
+        float dist = calculateEuclideanDistance(measuredWeight, point.weight); // Hitung jarak.
+        distances.push_back({dist, point.pillCount});                          // Tambahkan {jarak, label} ke vector 'distances'.
     }
 
-    // 2. Urutkan berdasarkan jarak (dari yang terdekat)
+    // 4. Urutkan Tetangga Berdasarkan Jarak
+    // Mengurutkan vector 'distances' menggunakan std::sort dan comparator kita.
     std::sort(distances.begin(), distances.end(), compareNeighbors);
 
-    // 3. Ambil K tetangga terdekat dan lakukan voting mayoritas
-    std::map<int, int> votes; // Map: {pillCount, countOfVotes}
+    // 5. Ambil K Tetangga Terdekat & Lakukan Voting Terbobot
+    std::map<int, float> weightedVotes; // Map untuk menghitung suara terbobot: {label_obat : total_bobot_suara}.
+
     for (int i = 0; i < actualK; ++i)
-    {
-        votes[distances[i].label]++; // Tambah vote untuk pillCount ini
+    { // Loop melalui 'actualK' tetangga terdekat.
+        float dist = distances[i].distance;
+        int label = distances[i].label;
+
+        float weight = 0.0f;
+        if (dist == 0.0f)
+        {                    // Jika jaraknya 0, berikan bobot yang sangat besar (kecocokan sempurna).
+            weight = 1.0e9f; // Bobot sangat besar untuk kecocokan sempurna. 'f' untuk float literal.
+        }
+        else
+        {
+            weight = 1.0f / (dist * dist); // Bobot = 1 / jarak^2.
+        }
+        weightedVotes[label] += weight; // Tambahkan bobot ke total suara untuk label ini.
     }
 
-    // 4. Temukan pillCount dengan vote terbanyak
-    int bestPillCount = -1;
-    int maxVotes = -1;
-    bool tie = false; // Flag untuk mendeteksi seri (tie-breaker logic bisa ditambahkan)
+    // 6. Temukan Label (Jumlah Obat) dengan Bobot Suara Terbanyak
+    int bestPillCount = -1;         // Inisialisasi hasil prediksi dengan -1 (nilai error/tidak ditemukan).
+    float maxWeightedVotes = -1.0f; // Inisialisasi jumlah bobot suara terbanyak dengan -1.0f.
 
-    for (const auto &pair : votes)
-    {
-        if (pair.second > maxVotes)
-        {
-            maxVotes = pair.second;
-            bestPillCount = pair.first;
-            tie = false; // Reset tie flag
-        }
-        else if (pair.second == maxVotes)
-        {
-            // Jika ada nilai yang sama, ini adalah seri (tie)
-            // Anda bisa tambahkan logika tie-breaker di sini,
-            // contoh: pilih label dengan nilai terkecil/terbesar, atau rata-rata label
-            // Untuk saat ini, kita biarkan yang pertama ditemukan yang menang.
-            tie = true;
+    // Iterasi melalui map 'weightedVotes' untuk menemukan label dengan bobot suara terbanyak.
+    for (const auto &pair : weightedVotes)
+    { // 'pair' adalah pasangan {label, total_bobot_suara}.
+        if (pair.second > maxWeightedVotes)
+        {                                   // Jika total bobot suara saat ini lebih besar dari 'maxWeightedVotes' sebelumnya.
+            maxWeightedVotes = pair.second; // Update 'maxWeightedVotes'.
+            bestPillCount = pair.first;     // Update 'bestPillCount' ke label ini.
+            // Tidak perlu bendera 'tie' di sini; yang pertama ditemukan dengan bobot tertinggi akan menjadi pemenang.
         }
     }
 
-    // Opsional: Jika ada seri dan K genap, kadang KNN bisa tidak stabil.
-    // Jika K genap dan terjadi seri, bisa tambahkan logika seperti:
-    // jika (tie && actualK % 2 == 0) {
-    //   // Tambahkan logika untuk mencari tetangga ke K+1, atau cari rata-rata label, dll.
-    // }
-
-    Serial.printf("KNN_Processor: Berat %.2f g diklasifikasikan sebagai %d obat (K=%d).\n", measuredWeight, bestPillCount, actualK);
-    return bestPillCount;
+    // Output ke Serial Monitor untuk debugging/informasi.
+    Serial.printf("KNN_Processor: Berat %.2f g diklasifikasikan sebagai %d obat (K=%d) dengan Weighted Voting. Max Weight: %.2f\n", measuredWeight, bestPillCount, actualK, maxWeightedVotes);
+    return bestPillCount; // Mengembalikan label (jumlah obat) yang diprediksi.
 }
 
+// Mengosongkan dataset.
 void KNN_Processor::clearDataset()
 {
-    _dataset.clear();
+    _dataset.clear(); // Menghapus semua elemen dari vector '_dataset'.
     Serial.println("KNN_Processor: Dataset KNN dikosongkan.");
 }
 
+// Mendapatkan ukuran dataset.
 size_t KNN_Processor::getDatasetSize() const
 {
-    return _dataset.size();
+    return _dataset.size(); // Mengembalikan jumlah elemen dalam '_dataset'.
 }
 
+// Mengatur nilai K.
 void KNN_Processor::setKValue(int k)
 {
     if (k > 0)
-    {
-        _k = k;
+    {           // Pastikan K adalah nilai positif.
+        _k = k; // Mengatur nilai K ke variabel member '_k'.
         Serial.printf("KNN_Processor: Nilai K diatur ke %d.\n", _k);
     }
     else
@@ -235,8 +248,8 @@ void KNN_Processor::setKValue(int k)
     }
 }
 
-// Metode helper untuk menghitung jarak Euclidean (dalam 1 dimensi)
+// Implementasi metode helper untuk menghitung jarak Euclidean (1D).
 float KNN_Processor::calculateEuclideanDistance(float weight1, float weight2) const
 {
-    return std::abs(weight1 - weight2); // Untuk 1D, Euclidean distance adalah selisih absolut
+    return std::abs(weight1 - weight2); // Menggunakan std::abs dari cmath untuk nilai absolut.
 }
