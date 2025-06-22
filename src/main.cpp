@@ -1,22 +1,25 @@
 #include <Arduino.h>
-#include "HardwareConfig.h"          // Untuk pin HX711 dan baud rate
-#include "AppConfig.h"               // Untuk EMA_FILTER_ALPHA
-// #include "TFT_Display.h"             // <--- KOMENTARI BARIS INI DULU
-#include "HX711_Module.h" // Modul HX711 kita
-#include "Utils.h"             // Modul Utils untuk EMAFilter
+#include "HardwareConfig.h" // Untuk pin HX711 dan baud rate
+#include "AppConfig.h"      // Untuk EMA_FILTER_ALPHA, KNN_K_VALUE, LOADCELL_READ_INTERVAL_MS
+// #include "TFT_Display/TFT_Display.h" // Modul TFT Display (DIKOMENTARI UNTUK TEST INI)
+#include "HX711_Module.h"  // Modul HX711 kita
+#include "Utils.h"         // Modul Utils untuk EMAFilter
+#include "KNN_Processor.h" // Modul KNN kita
 
 // --- Global Instances ---
-// TFT_Display myTFT; // <--- KOMENTARI BARIS INI DULU
+// TFT_Display myTFT; // DIKOMENTARI
 HX711_Module myLoadCell;
 EMAFilter weightFilter(EMA_FILTER_ALPHA); // Gunakan alpha dari AppConfig.h
+KNN_Processor myKNN(KNN_K_VALUE);         // Gunakan K_VALUE dari AppConfig.h
 
 // --- FreeRTOS Task Declarations ---
-void taskLoadCellKNN(void *pvParameters); // Akan kita gunakan untuk membaca load cell
-// void taskUpdateDisplay(void *pvParameters); // <--- KOMENTARI BARIS INI DULU
+void taskLoadCellAndKNN(void *pvParameters); // Task gabungan untuk membaca dan mengklasifikasi
+// void taskUpdateDisplay(void *pvParameters); // DIKOMENTARI
 
-void setup() {
+void setup()
+{
   Serial.begin(SERIAL_BAUD_RATE);
-  Serial.println("Starting Kotak Obat Pintar - HX711 & EMA Test (Serial Only)...");
+  Serial.println("Starting Kotak Obat Pintar - HX711, EMA, & KNN Full Test...");
 
   // Inisialisasi Modul TFT Display (DIKOMENTARI DULU UNTUK TEST INI)
   // myTFT.begin();
@@ -26,26 +29,28 @@ void setup() {
   // Inisialisasi Modul HX711
   // Pin DT dan SCK diambil dari HardwareConfig.h
   myLoadCell.begin(HX711_DT_PIN, HX711_SCK_PIN);
-  delay(1000); // Beri waktu sensor untuk stabil
+  delay(1000);       // Beri waktu sensor untuk stabil
   myLoadCell.tare(); // Lakukan tare awal
 
   // Set faktor kalibrasi awal. Ini HARUS disesuaikan setelah kalibrasi!
-  // Anda bisa mulai dengan 1.0f dulu, nanti angkanya tidak realistis tapi bisa lihat perubahan.
-  // Atau masukkan nilai perkiraan Anda dari kalibrasi sebelumnya.
-  myLoadCell.setCalibrationFactor(WEIGHT_CALIBRATION); // <<-- SESUAIKAN DENGAN PERKIRAAN FAKTOR KALIBRASI ANDA!
+  // Gunakan nilai yang paling akurat dari kalibrasi Anda.
+  myLoadCell.setCalibrationFactor(WEIGHT_CALIBRATION); // <<-- SESUAIKAN DENGAN FAKTOR KALIBRASI ANDA!
 
   // Reset EMA filter dengan nilai 0 setelah tare
   weightFilter.reset(EMA_FILTER_RESET);
 
+  // Modul KNN sudah diinisialisasi otomatis saat 'myKNN' dibuat,
+  // dan dataset default juga sudah dimuat di konstruktornya.
+
   // --- Buat FreeRTOS Task ---
   xTaskCreatePinnedToCore(
-    taskLoadCellKNN,
-    "LoadCellKNN",
-    4096, // Ukuran stack
-    NULL,
-    5,    // Prioritas
-    NULL,
-    0     // Core 0
+      taskLoadCellAndKNN,
+      "LoadCellKNNTask",
+      4096, // Ukuran stack (mungkin perlu lebih jika dataset KNN besar)
+      NULL,
+      5, // Prioritas (lebih tinggi karena ini inti)
+      NULL,
+      0 // Core 0
   );
 
   // Task Display DIKOMENTARI DULU
@@ -59,28 +64,35 @@ void setup() {
   //   1
   // );
 
-  Serial.println("Setup Complete. Load Cell Task is running.");
+  Serial.println("Setup Complete. Load Cell & KNN Task is running.");
 }
 
-void loop() {
+void loop()
+{
   delay(10); // Biarkan RTOS scheduler bekerja
 }
 
 // --- Implementasi FreeRTOS Task ---
 
-void taskLoadCellKNN(void *pvParameters) {
-  for (;;) {
+void taskLoadCellAndKNN(void *pvParameters)
+{
+  for (;;)
+  {
     float currentWeight = myLoadCell.getCalibratedWeight();
     float filteredWeight = weightFilter.filter(currentWeight);
 
-    Serial.printf("Raw Weight: %.2f g, Filtered Weight (EMA): %.2f g\n", currentWeight, filteredWeight);
+    // Lakukan klasifikasi KNN
+    int predictedPillCount = myKNN.classify(filteredWeight);
 
-    // Memberikan waktu untuk task ini dan membiarkan task lain berjalan
+    Serial.printf("Berat Terukur: %.2f g | Berat Filtered (EMA): %.2f g | Prediksi Jumlah Obat (KNN): %d\n",
+                  currentWeight, filteredWeight, predictedPillCount);
+
+    // Di sini nanti kita akan mengirim 'predictedPillCount' ke task display
+    // atau task jadwal melalui FreeRTOS Queue.
+
     vTaskDelay(pdMS_TO_TICKS(LOADCELL_READ_INTERVAL_MS)); // Interval dari AppConfig.h
   }
 }
 
-// Task Update Display DIKOMENTARI DULU
-// void taskUpdateDisplay(void *pvParameters) {
-//   // ... (kode display yang dikomentari)
-// }
+// Implementasi taskUpdateDisplay dan fungsi terkait TFT DIKOMENTARI
+// void taskUpdateDisplay(void *pvParameters) { /* ... */ }
