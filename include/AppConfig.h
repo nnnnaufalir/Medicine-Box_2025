@@ -27,7 +27,7 @@
 #define EEPROM_ADDR_SCHEDULE 300  // Alamat awal untuk data jadwal obat
 
 // --- Toleransi (contoh, akan disesuaikan) ---
-#define WEIGHT_CALIBRATION 400.0f
+#define WEIGHT_CALIBRATION 4119.755f
 #define WEIGHT_TOLERANCE_MG 50 // Toleransi berat dalam miligram untuk deteksi obat
 
 #endif // APP_CONFIG_H
