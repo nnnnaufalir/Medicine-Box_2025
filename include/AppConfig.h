@@ -8,10 +8,10 @@
 #define EMA_FILTER_RESET 0.0f
 
 // Konstanta untuk KNN (contoh nilai awal, bisa disesuaikan nanti)
-#define KNN_K_VALUE 3 // Nilai 'K' untuk algoritma K-Nearest Neighbors
+#define KNN_K_VALUE 15 // Nilai 'K' untuk algoritma K-Nearest Neighbors
 
 // Konstanta untuk Debounce Tombol (dalam milidetik)
-#define BUTTON_DEBOUNCE_MS 50 // Waktu tunda untuk debounce tombol
+#define BUTTON_DEBOUNCE_MS 10 // Waktu tunda untuk debounce tombol
 
 // Konstanta untuk Interval Pembacaan Sensor/Task (dalam milidetik)
 #define LOADCELL_READ_INTERVAL_MS 100   // Interval pembacaan load cell dan proses KNN
