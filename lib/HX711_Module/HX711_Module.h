@@ -2,12 +2,13 @@
 #define HX711_MODULE_H
 
 // --- Includes ---
-#include <Arduino.h>     // Untuk tipe data dasar seperti float, int
-#include <HX711.h>       // Pustaka eksternal untuk HX711
+#include <Arduino.h>        //
+#include <HX711.h>          // Pustaka eksternal untuk HX711
 #include "HardwareConfig.h" // Untuk definisi pin HX711
 
 // --- Kelas HX711_Module ---
-class HX711_Module {
+class HX711_Module
+{
 public:
     /**
      * @brief Menginisialisasi modul HX711.
@@ -49,10 +50,6 @@ public:
      */
     bool isReady();
 
-    // --- Metode Kalibrasi (Opsional, bisa dilakukan terpisah) ---
-    // Metode ini bisa digunakan dalam mode kalibrasi terpisah jika diperlukan
-    // atau untuk menyimpan dan memuat faktor kalibrasi dari EEPROM.
-
     /**
      * @brief Mendapatkan faktor skala saat ini.
      * @return Faktor skala yang digunakan.
@@ -65,9 +62,8 @@ public:
      */
     long getOffset();
 
-
 private:
-    HX711 _scale; // Instance dari pustaka eksternal HX711
+    HX711 _scale;             // Instance dari pustaka eksternal HX711
     float _calibrationFactor; // Faktor kalibrasi yang akan digunakan
 };
 
