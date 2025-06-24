@@ -1,70 +1,42 @@
 #include <Arduino.h>
-#include "HardwareConfig.h" // Untuk pin HX711 dan baud rate
-#include "AppConfig.h"      // Untuk EMA_FILTER_ALPHA, KNN_K_VALUE, LOADCELL_READ_INTERVAL_MS
-// #include "TFT_Display/TFT_Display.h" // Modul TFT Display (DIKOMENTARI UNTUK TEST INI)
-#include "HX711_Module.h"  // Modul HX711 kita
-#include "Utils.h"         // Modul Utils untuk EMAFilter
-#include "KNN_Processor.h" // Modul KNN kita
+#include "HardwareConfig.h" // Untuk pin dan baud rate
+#include "AppConfig.h"      // Untuk konstanta aplikasi
+#include "TFT_Display.h"    // Modul TFT Display kita
+// #include "HX711_Module/HX711_Module.h" // Modul HX711 kita (DIKOMENTARI)
+// #include "Utils/Utils.h"             // Modul Utils untuk EMAFilter (DIKOMENTARI)
+// #include "KNN_Processor/KNN_Processor.h" // Modul KNN kita (DIKOMENTARI)
 
 // --- Global Instances ---
-// TFT_Display myTFT;
-HX711_Module myLoadCell;
-EMAFilter weightFilter(EMA_FILTER_ALPHA); // Gunakan alpha dari AppConfig.h
-KNN_Processor myKNN(KNN_K_VALUE);         // Gunakan K_VALUE dari AppConfig.h
+TFT_Display myTFT;
+// HX711_Module myLoadCell; // DIKOMENTARI
+// EMAFilter weightFilter(EMA_FILTER_ALPHA); // DIKOMENTARI
+// KNN_Processor myKNN(KNN_K_VALUE);         // DIKOMENTARI
 
 // --- FreeRTOS Task Declarations ---
-void taskLoadCellAndKNN(void *pvParameters); // Task gabungan untuk membaca dan mengklasifikasi
-// void taskUpdateDisplay(void *pvParameters); // DIKOMENTARI
+// void taskLoadCellAndKNN(void *pvParameters); // DIKOMENTARI
+void taskUpdateDisplay(void *pvParameters); // Task display yang akan kita pakai
 
 void setup()
 {
   Serial.begin(SERIAL_BAUD_RATE);
-  Serial.println("Starting Kotak Obat Pintar - HX711, EMA, & KNN Full Test...");
+  Serial.println("Starting Kotak Obat Pintar - TFT Full Display Test...");
 
   // Inisialisasi Modul TFT Display
-  // myTFT.begin();
-  // myTFT.clearScreen(ILI9341_BLACK);
-  // myTFT.printText("Loading...", 10, 10, ILI9341_WHITE, 2);
-
-  // Inisialisasi Modul HX711
-  // Pin DT dan SCK diambil dari HardwareConfig.h
-  myLoadCell.begin(HX711_DT_PIN, HX711_SCK_PIN);
-  delay(1000);       // Beri waktu sensor untuk stabil
-  myLoadCell.tare(); // Lakukan tare awal
-
-  // Set faktor kalibrasi awal. Ini HARUS disesuaikan setelah kalibrasi!
-  // Gunakan nilai yang paling akurat dari kalibrasi Anda.
-  myLoadCell.setCalibrationFactor(WEIGHT_CALIBRATION); // <<-- SESUAIKAN DENGAN FAKTOR KALIBRASI ANDA!
-
-  // Reset EMA filter dengan nilai 0 setelah tare
-  weightFilter.reset(EMA_FILTER_RESET);
-
-  // Modul KNN sudah diinisialisasi otomatis saat 'myKNN' dibuat,
-  // dan dataset default juga sudah dimuat di konstruktornya.
+  myTFT.begin();
+  delay(100); // Beri waktu display untuk stabil
 
   // --- Buat FreeRTOS Task ---
   xTaskCreatePinnedToCore(
-      taskLoadCellAndKNN,
-      "LoadCellKNNTask",
-      4096, // Ukuran stack (mungkin perlu lebih jika dataset KNN besar)
+      taskUpdateDisplay,
+      "DisplayTask",
+      4096, // Ukuran stack
       NULL,
-      5, // Prioritas (lebih tinggi karena ini inti)
+      3, // Prioritas
       NULL,
-      0 // Core 0
+      1 // Core 1 (agar tidak bertabrakan dengan serial debug di Core 0 jika ada)
   );
 
-  // Task Display
-  // xTaskCreatePinnedToCore(
-  //   taskUpdateDisplay,
-  //   "DisplayTask",
-  //   4096,
-  //   NULL,
-  //   3,
-  //   NULL,
-  //   1
-  // );
-
-  Serial.println("Setup Complete. Load Cell & KNN Task is running.");
+  Serial.println("Setup Complete. Display Task is running.");
 }
 
 void loop()
@@ -74,22 +46,36 @@ void loop()
 
 // --- Implementasi FreeRTOS Task ---
 
-void taskLoadCellAndKNN(void *pvParameters)
+void taskUpdateDisplay(void *pvParameters)
 {
+  int currentPage = 0;
+  int dummyObatCount = 5; // Untuk simulasi jumlah obat
   for (;;)
   {
-    float currentWeight = myLoadCell.getCalibratedWeight();
-    float filteredWeight = weightFilter.filter(currentWeight);
+    switch (currentPage)
+    {
+    case 0:
+      myTFT.drawHomeScreen(dummyObatCount);
+      break;
+    case 1:
+      myTFT.drawWarningScreen(dummyObatCount - 1); // Contoh kurangi satu untuk peringatan
+      break;
+    case 2:
+      myTFT.drawInformationScreen();
+      break;
+    case 3:
+      myTFT.drawSettingsScreen();
+      break;
+    default:
+      currentPage = 0; // Kembali ke home
+      myTFT.drawHomeScreen(dummyObatCount);
+      break;
+    }
 
-    // Lakukan klasifikasi KNN
-    int predictedPillCount = myKNN.classify(filteredWeight);
+    currentPage = (currentPage + 1) % 4;        // Ganti halaman setiap kali (0, 1, 2, 3 -> 0, 1, 2, 3...)
+    dummyObatCount = (dummyObatCount % 10) + 1; // Ubah jumlah obat dummy
 
-    Serial.printf("Berat Terukur: %.2f g | Berat Filtered (EMA): %.2f g | Prediksi Jumlah Obat (KNN): %d\n",
-                  currentWeight, filteredWeight, predictedPillCount);
-
-    // Di sini nanti kita akan mengirim 'predictedPillCount' ke task display
-    // atau task jadwal melalui FreeRTOS Queue.
-
-    vTaskDelay(pdMS_TO_TICKS(LOADCELL_READ_INTERVAL_MS)); // Interval dari AppConfig.h
+    Serial.printf("Display Task: Drawing Page %d with %d dummy pills\n", currentPage, dummyObatCount);
+    vTaskDelay(pdMS_TO_TICKS(3000)); // Ganti halaman setiap 3 detik
   }
 }
