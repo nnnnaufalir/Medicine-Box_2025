@@ -7,7 +7,7 @@
 #include "KNN_Processor.h" // Modul KNN kita
 
 // --- Global Instances ---
-// TFT_Display myTFT; // DIKOMENTARI
+// TFT_Display myTFT;
 HX711_Module myLoadCell;
 EMAFilter weightFilter(EMA_FILTER_ALPHA); // Gunakan alpha dari AppConfig.h
 KNN_Processor myKNN(KNN_K_VALUE);         // Gunakan K_VALUE dari AppConfig.h
@@ -21,7 +21,7 @@ void setup()
   Serial.begin(SERIAL_BAUD_RATE);
   Serial.println("Starting Kotak Obat Pintar - HX711, EMA, & KNN Full Test...");
 
-  // Inisialisasi Modul TFT Display (DIKOMENTARI DULU UNTUK TEST INI)
+  // Inisialisasi Modul TFT Display
   // myTFT.begin();
   // myTFT.clearScreen(ILI9341_BLACK);
   // myTFT.printText("Loading...", 10, 10, ILI9341_WHITE, 2);
@@ -53,7 +53,7 @@ void setup()
       0 // Core 0
   );
 
-  // Task Display DIKOMENTARI DULU
+  // Task Display
   // xTaskCreatePinnedToCore(
   //   taskUpdateDisplay,
   //   "DisplayTask",
@@ -93,6 +93,3 @@ void taskLoadCellAndKNN(void *pvParameters)
     vTaskDelay(pdMS_TO_TICKS(LOADCELL_READ_INTERVAL_MS)); // Interval dari AppConfig.h
   }
 }
-
-// Implementasi taskUpdateDisplay dan fungsi terkait TFT DIKOMENTARI
-// void taskUpdateDisplay(void *pvParameters) { /* ... */ }
