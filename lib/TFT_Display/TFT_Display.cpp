@@ -1,44 +1,43 @@
 #include "TFT_Display.h" // Include header kita sendiri
-#include <Arduino.h>     // Untuk Serial.println dan delay
-#include "AppConfig.h"   // Untuk konstanta umum jika diperlukan
+#include <Arduino.h>     // Untuk Serial.println, pinMode, digitalWrite
 
 // Inisialisasi objek Adafruit_ILI9341 di luar kelas
-// Menggunakan pin dari HardwareConfig.h
+// Menggunakan pin dari HardwareConfig.h yang sudah dikonfirmasi.
+// Konstruktor: (CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN, MISO_PIN (opsional))
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS_PIN, TFT_DC_PIN, TFT_MOSI_PIN, TFT_SCLK_PIN, TFT_RST_PIN);
 
 void TFT_Display::begin()
 {
     Serial.println("TFT_Display: Menginisialisasi display...");
-    tft.begin();
-    tft.setRotation(1);    // Sesuaikan rotasi display (0, 1, 2, 3)
-    tft.fillScreen(HITAM); // Layar awal hitam
-    // Inisialisasi pin LED TFT jika digunakan
-    pinMode(TFT_LED_PIN, OUTPUT);
-    digitalWrite(TFT_LED_PIN, HIGH); // Nyalakan backlight (HIGH untuk aktif, sesuaikan jika LOW)
+    tft.begin(); // Panggil fungsi inisialisasi dari pustaka Adafruit
+
+    tft.setRotation(3);    // Atur rotasi display (0=potrait, 1=landscape, 2=potrait terbalik, 3=landscape terbalik)
+    tft.fillScreen(HITAM); // Isi layar dengan warna hitam saat inisialisasi
+
     Serial.println("TFT_Display: Inisialisasi selesai.");
 }
 
 void TFT_Display::printText(const char *text, int x, int y, uint16_t color, int size)
 {
-    tft.setCursor(x, y);
-    tft.setTextColor(color);
-    tft.setTextSize(size);
-    tft.print(text);
+    tft.setCursor(x, y);     // Atur posisi kursor untuk teks
+    tft.setTextColor(color); // Atur warna teks
+    tft.setTextSize(size);   // Atur ukuran font
+    tft.print(text);         // Cetak teks ke layar
 }
 
 void TFT_Display::clearScreen(uint16_t color)
 {
-    tft.fillScreen(color);
+    tft.fillScreen(color); // Mengisi seluruh layar dengan warna yang ditentukan
 }
 
 void TFT_Display::setTextColor(uint16_t color)
 {
-    tft.setTextColor(color);
+    tft.setTextColor(color); // Mengatur warna teks default untuk penulisan selanjutnya
 }
 
 void TFT_Display::setTextSize(uint8_t size)
 {
-    tft.setTextSize(size);
+    tft.setTextSize(size); // Mengatur ukuran teks default untuk penulisan selanjutnya
 }
 
 // --- Implementasi Metode Halaman (Diadaptasi dari kode Anda) ---
@@ -47,21 +46,21 @@ void TFT_Display::drawHomeScreen(int jumlahObat)
 {
     clearScreen(BIRU_GELAP); // Background
 
-    // Header
+    // Header Bar
     tft.fillRect(0, 0, tft.width(), 40, BIRU); // Header bar
     printText("Kotak Obat Pintar", 10, 10, PUTIH, 2);
 
-    // Box Jumlah Obat
-    tft.drawRoundRect(10, 50, 220, 100, 8, PUTIH);
+    // Box "Jumlah Obat"
+    tft.drawRoundRect(10, 50, tft.width() - 20, 100, 8, PUTIH); // Memperlebar box
     printText("Jumlah Obat:", 20, 60, PUTIH, 2);
-    drawLargeNumber(jumlahObat, 70, 90, KUNING_CERAH); // Posisi disesuaikan
+    drawLargeNumber(jumlahObat, tft.width() / 2 - 40, 90, KUNING_CERAH); // Posisi disesuaikan ke tengah
 
-    // Box Jadwal Berikutnya (placeholder)
-    tft.drawRoundRect(10, 160, 220, 70, 8, PUTIH);
+    // Box "Jadwal Berikutnya" (placeholder)
+    tft.drawRoundRect(10, 160, tft.width() - 20, 70, 8, PUTIH); // Memperlebar box
     printText("Jadwal Berikutnya:", 20, 170, PUTIH, 1);
     printText("Obat A - 08:00", 20, 190, HIJAU_GELAP, 2);
 
-    // Footer
+    // Footer Bar
     tft.fillRect(0, tft.height() - 30, tft.width(), 30, ABU_ABU_TERANG);
     printText("Status: OK", 10, tft.height() - 25, HITAM, 1);
 }
@@ -70,7 +69,7 @@ void TFT_Display::drawWarningScreen(int jumlahObat)
 {
     clearScreen(MERAH); // Background peringatan merah!
 
-    // Header
+    // Header Bar
     tft.fillRect(0, 0, tft.width(), 40, HITAM);
     printText("Peringatan Obat!", 10, 10, PUTIH, 2);
 
@@ -80,7 +79,7 @@ void TFT_Display::drawWarningScreen(int jumlahObat)
 
     // Tampilkan jumlah obat saat ini (jika relevan)
     printText("Sisa Obat:", 20, 130, PUTIH, 2);
-    drawLargeNumber(jumlahObat, 70, 160, KUNING_CERAH);
+    drawLargeNumber(jumlahObat, tft.width() / 2 - 40, 160, KUNING_CERAH); // Posisi disesuaikan
 
     // Tombol OK (contoh)
     drawButton(tft.width() / 2 - 50, tft.height() - 60, 100, 40, HIJAU, PUTIH, "OK", PUTIH);
@@ -108,8 +107,7 @@ void TFT_Display::drawSettingsScreen()
     // ... dst
 }
 
-// --- Implementasi Utilitas Gambar (Diadaptasi dari kode Anda) ---
-
+// --- Implementasi Utilitas Gambar
 void TFT_Display::drawButton(int x, int y, int width, int height, uint16_t color, uint16_t borderColor, const char *text, uint16_t textColor)
 {
     tft.fillRoundRect(x, y, width, height, 5, color);
