@@ -5,7 +5,8 @@
 #include <Arduino.h> // Untuk tipe data dasar seperti float
 
 // --- Kelas EMAFilter ---
-class EMAFilter {
+class EMAFilter
+{
 public:
     /**
      * @brief Konstruktor untuk EMAFilter.
@@ -34,10 +35,8 @@ public:
     void reset(float initialValue, float alpha);
 
 private:
-    float _alpha;          // Faktor penghalusan EMA
-    float _filteredValue;  // Nilai yang sudah difilter terakhir
+    float _alpha;         // Faktor penghalusan EMA
+    float _filteredValue; // Nilai yang sudah difilter terakhir
 };
-
-// --- Anda bisa menambahkan deklarasi kelas atau fungsi utilitas lainnya di sini nanti ---
 
 #endif // UTILS_H
