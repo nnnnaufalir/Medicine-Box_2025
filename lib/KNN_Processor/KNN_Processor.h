@@ -2,12 +2,12 @@
 #define KNN_PROCESSOR_H
 
 // --- Includes ---
-#include <Arduino.h>   // Untuk tipe data dasar seperti float, int
+#include <Arduino.h>
 #include <vector>      // Untuk menyimpan dataset (std::vector)
 #include "AppConfig.h" // Untuk KNN_K_VALUE (nilai K default)
 
 // --- Struktur Data untuk Dataset KNN ---
-// Mewakili satu titik data dalam dataset (berat dan jumlah obat terkait)
+// Mewakili satu titik data dalam dataset
 struct KNN_DataPoint
 {
     float weight;  // Fitur input: Berat terkalibrasi (misal: dalam gram)
@@ -20,7 +20,7 @@ class KNN_Processor
 public:
     /**
      * @brief Konstruktor untuk KNN_Processor.
-     * Fungsi ini otomatis dipanggil saat objek KNN_Processor dibuat (misal: 'KNN_Processor myKNN;').
+     * Fungsi ini otomatis dipanggil saat objek KNN_Processor dibuat
      * Menginisialisasi nilai K dan memuat dataset default.
      * @param k Nilai 'K' yang akan digunakan dalam algoritma K-Nearest Neighbors. Defaultnya diambil dari APP_CONFIG.
      */

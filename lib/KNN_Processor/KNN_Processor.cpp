@@ -1,12 +1,10 @@
-#include "KNN_Processor.h" // Memasukkan header dari modul kita sendiri.
-#include <Arduino.h>       // Memasukkan pustaka Arduino, terutama untuk fungsi Serial.println.
-#include <algorithm>       // Memasukkan pustaka STL C++ 'algorithm', terutama untuk std::sort.
-#include <map>             // Memasukkan pustaka STL C++ 'map', untuk implementasi voting mayoritas.
-#include <cmath>           // Memasukkan pustaka C++ 'cmath', terutama untuk std::abs.
+#include "KNN_Processor.h"
+#include <Arduino.h> // Memasukkan pustaka Arduino
+#include <algorithm> // Memasukkan pustaka STL C++ 'algorithm', terutama untuk std::sort.
+#include <map>       // Memasukkan pustaka STL C++ 'map', untuk implementasi voting mayoritas.
+#include <cmath>     // Memasukkan pustaka C++ 'cmath', terutama untuk std::abs.
 
 // --- Definisi Dataset KNN Default ---
-// Ini adalah dataset awal yang akan digunakan jika tidak ada data lain yang dimuat.
-// Berisi pasangan berat dan jumlah obat.
 const KNN_DataPoint DEFAULT_KNN_DATASET[] = {
     // Jumlah Obat = 0 (Berat 0 - 1.3g)
     {0.2f, 0},
@@ -108,11 +106,9 @@ const KNN_DataPoint DEFAULT_KNN_DATASET[] = {
 const size_t DEFAULT_DATASET_SIZE = sizeof(DEFAULT_KNN_DATASET) / sizeof(DEFAULT_KNN_DATASET[0]);
 
 // --- Struktur Helper dan Comparator untuk Sorting ---
-// Struktur ini digunakan secara internal dalam metode classify()
-// untuk menyimpan jarak dan label tetangga, yang akan diurutkan.
 struct NeighborInfo
 {
-    float distance; // Jarak dari titik data yang diukur ke titik ini.
+    float distance; // Jarak dari titik data yang diukur
     int label;      // Label (jumlah obat) dari titik data ini.
 };
 
@@ -150,14 +146,14 @@ void KNN_Processor::addDataPoints(const KNN_DataPoint data[], size_t size)
     }
 }
 
-// Metode inti untuk mengklasifikasikan berat yang diukur.
+// Metode mengklasifikasikan berat yang diukur.
 int KNN_Processor::classify(float measuredWeight)
 {
     // 1. Cek Dataset Kosong
     if (_dataset.empty())
-    { // Jika _dataset tidak memiliki elemen.
+    {
         Serial.println("KNN_Processor: Dataset kosong, tidak dapat mengklasifikasi.");
-        return -1; // Mengembalikan -1 sebagai indikasi error.
+        return -1;
     }
 
     // 2. Sesuaikan Nilai K
