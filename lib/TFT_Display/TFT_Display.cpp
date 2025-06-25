@@ -44,7 +44,7 @@ void TFT_Display::setTextSize(uint8_t size)
 
 void TFT_Display::drawHomeScreen(int jumlahObat)
 {
-    clearScreen(BIRU_GELAP); // Background
+    // clearScreen(BIRU_GELAP); // Background
 
     // Header Bar
     tft.fillRect(0, 0, tft.width(), 40, BIRU); // Header bar
