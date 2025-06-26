@@ -2,7 +2,7 @@
 #define HX711_MODULE_H
 
 #include <HX711.h>
-#include "Utils.h"
+#include "Utils/Utils.h" // Diperlukan untuk EMAFilter
 
 class HX711_Module
 {
@@ -12,7 +12,6 @@ public:
     bool isReady();
     void tare();
     void setCalibrationFactor(float factor);
-    float getCalibrationFactor();
     float getWeight();
 
 private:
