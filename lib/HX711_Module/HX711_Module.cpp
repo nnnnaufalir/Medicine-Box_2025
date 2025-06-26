@@ -1,41 +1,17 @@
-#include "HX711_Module.h"   // Include header
-#include "HardwareConfig.h" // Untuk pin HX711
-#include <Arduino.h>        //
+#include "HX711_Module.h"
+#include "AppConfig.h"
 
-// --- Implementasi Kelas HX711_Module ---
-
-void HX711_Module::begin(int doutPin, int sckPin)
+HX711_Module::HX711_Module(byte dout, byte sck)
+    : _emaFilter(EMA_ALPHA)
 {
-    Serial.println("HX711_Module: Menginisialisasi sensor HX711...");
-    _scale.begin(doutPin, sckPin);
-
-    Serial.println("HX711_Module: Sensor HX711 siap.");
-    tare();                    // Lakukan tare awal saat start
-                               // Set faktor kalibrasi default atau dari EEPROM jika ada
-    _calibrationFactor = 1.0f; // Nilai placeholder, akan di-override setelah kalibrasi
+    _scale.begin(dout, sck);
 }
 
-void HX711_Module::setCalibrationFactor(float scale)
+void HX711_Module::begin()
 {
-    _calibrationFactor = scale;
-    _scale.set_scale(scale); // Set faktor skala di pustaka HX711
-    Serial.printf("HX711_Module: Faktor kalibrasi diatur ke: %.2f\n", _calibrationFactor);
-}
-
-void HX711_Module::tare()
-{
-    _scale.tare(); // Lakukan tare di pustaka HX711
-    Serial.println("HX711_Module: Tare (zeroing) selesai.");
-}
-
-float HX711_Module::getCalibratedWeight(byte times)
-{
-    return _scale.get_units(times); // Mengambil nilai dalam unit yang dikalibrasi
-}
-
-long HX711_Module::getRawValue(byte times)
-{
-    return _scale.read_average(times); // Mengambil nilai mentah rata-rata
+    // Faktor kalibrasi akan diatur secara manual dari main.cpp
+    _scale.set_scale(1.0f);
+    tare();
 }
 
 bool HX711_Module::isReady()
@@ -43,12 +19,30 @@ bool HX711_Module::isReady()
     return _scale.is_ready();
 }
 
-float HX711_Module::getScale()
+void HX711_Module::tare()
+{
+    if (_scale.is_ready())
+    {
+        _scale.tare();
+    }
+}
+
+void HX711_Module::setCalibrationFactor(float factor)
+{
+    _scale.set_scale(factor);
+}
+
+float HX711_Module::getCalibrationFactor()
 {
     return _scale.get_scale();
 }
 
-long HX711_Module::getOffset()
+float HX711_Module::getWeight()
 {
-    return _scale.get_offset();
+    if (_scale.is_ready())
+    {
+        float reading = _scale.get_units(5);
+        return _emaFilter.update(reading);
+    }
+    return _emaFilter.getValue();
 }
