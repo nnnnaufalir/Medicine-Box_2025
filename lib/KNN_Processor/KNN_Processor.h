@@ -1,10 +1,12 @@
 #ifndef KNN_PROCESSOR_H
 #define KNN_PROCESSOR_H
 
-// Mengadopsi struktur data dari kode Anda
+#include <vector>
+
+// Menggunakan struktur data dari logika Anda
 struct KNNDataPoint
 {
-    float features[1]; // Menggunakan array seperti di kode Anda
+    float features[1];
     int label;
 };
 
@@ -13,19 +15,18 @@ class KNN_Processor
 public:
     KNN_Processor(int k);
 
-    // Metode untuk memuat dataset (C-style array) Anda
+    // Memuat dataset (C-style array) dari program utama
     void loadDataset(const KNNDataPoint *dataset, int size);
 
-    // Fungsi publik utama untuk melakukan klasifikasi
+    // Fungsi utama untuk klasifikasi berat
     int classify(float weight);
 
 private:
-    // --- Variabel internal kelas ---
     int _k;
-    const KNNDataPoint *_dataset; // Pointer ke dataset Anda
+    const KNNDataPoint *_dataset;
     int _dataset_size;
 
-    // --- Fungsi helper dari kode Anda, sekarang menjadi metode privat ---
+    // Metode helper, sekarang menjadi bagian privat dari kelas
     float euclideanDistance(const float features1[], const float features2[]);
     void getKNearestNeighbors(const float new_sample_features[], int k_neighbors_labels[]);
     int predictClass(const int k_neighbors_labels[]);
