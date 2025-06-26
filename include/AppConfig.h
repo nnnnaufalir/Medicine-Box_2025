@@ -1,34 +1,29 @@
 #ifndef APP_CONFIG_H
 #define APP_CONFIG_H
 
-// --- General Application Configuration ---
+// --- Filter Exponential Moving Average (EMA) ---
+#define EMA_ALPHA 0.6f
 
-// EMA Filter constants
-#define EMA_FILTER_ALPHA 0.6f
-#define EMA_FILTER_RESET_VALUE 0.0f
+// --- Algoritma K-Nearest Neighbors (KNN) ---
+#define KNN_K 3
 
-// --- Load Cell Specific Configuration ---
-#define WEIGHT_CALIBRATION 4119.755f
-#define WEIGHT_SAMPLING 10
-#define WEIGHT_TOLERANCE_G 1.2f
-#define AUTO_TARE_DELAY_MS 5000
+// --- Toleransi Berat & Stabilitas ---
+#define WEIGHT_TOLERANCE 0.5f
+#define STABLE_READING_THRESHOLD 0.1f
 
-// KNN constants
-#define KNN_K_VALUE 21
+// --- Konfigurasi Tugas FreeRTOS ---
+#define TASK_LOAD_CELL_INTERVAL_MS 200
+#define TASK_UI_UPDATE_INTERVAL_MS 100
+#define TASK_SYSTEM_MONITOR_INTERVAL_MS 500
+#define TASK_SCHEDULER_INTERVAL_MS 1000
 
-// Button debounce delay (milliseconds)
-#define BUTTON_DEBOUNCE_MS 10
+// --- Alokasi Alamat EEPROM (AT24C32) ---
+#define EEPROM_ADDR_HX711_CAL_FACTOR 0
+#define EEPROM_ADDR_KNN_DATASET_START 10
+#define EEPROM_ADDR_SCHEDULE_START 200
 
-// Task/Sensor read intervals (milliseconds)
-#define LOADCELL_READ_INTERVAL_MS 15
-#define DISPLAY_UPDATE_INTERVAL_MS 50
-#define BATTERY_CHECK_INTERVAL_MS 1000
-#define SCHEDULE_CHECK_INTERVAL_MS 100
-
-// --- RTC and EEPROM Configuration ---
-#define EEPROM_SIZE_BYTES 4096
-#define EEPROM_ADDR_CALIBRATION 0
-#define EEPROM_ADDR_KNN_DATA 100
-#define EEPROM_ADDR_SCHEDULE 300
+// --- Konfigurasi Web Server ---
+#define WIFI_SSID "KotakObatPintar_AP"
+#define WIFI_PASSWORD "12345678"
 
 #endif // APP_CONFIG_H
