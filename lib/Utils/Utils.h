@@ -1,42 +1,90 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-// --- Includes ---
-#include <Arduino.h> // Untuk tipe data dasar seperti float
+#include <Arduino.h>
 
-// --- Kelas EMAFilter ---
+/**
+ * @class EMAFilter
+ * @brief Sebuah template untuk filter Exponential Moving Average.
+ * Berguna untuk memperhalus data sensor yang berfluktuasi.
+ */
+template <typename T>
 class EMAFilter
 {
 public:
-    /**
-     * @brief Konstruktor untuk EMAFilter.
-     * @param alpha Faktor penghalusan (0.0f - 1.0f). Semakin kecil, semakin halus.
-     */
-    EMAFilter(float alpha = 0.1f);
+    // Konstruktor dengan faktor alpha (0 < alpha < 1)
+    EMAFilter(float alpha);
 
-    /**
-     * @brief Memfilter nilai baru menggunakan EMA.
-     * @param newValue Nilai input yang akan difilter.
-     * @return Nilai yang sudah difilter.
-     */
-    float filter(float newValue);
+    // Memperbarui filter dengan nilai baru dan mengembalikan nilai yang sudah difilter
+    T update(T newValue);
 
-    /**
-     * @brief Mengatur ulang filter dengan nilai awal tertentu.
-     * @param initialValue Nilai awal untuk _filteredValue.
-     */
-    void reset(float initialValue);
+    // Mendapatkan nilai terfilter terakhir tanpa memperbarui
+    T getValue() const;
 
-    /**
-     * @brief Mengatur ulang filter dan faktor alpha.
-     * @param initialValue Nilai awal untuk _filteredValue.
-     * @param alpha Faktor penghalusan baru.
-     */
-    void reset(float initialValue, float alpha);
+    // Mereset filter
+    void reset();
 
 private:
-    float _alpha;         // Faktor penghalusan EMA
-    float _filteredValue; // Nilai yang sudah difilter terakhir
+    float _alpha;
+    T _filteredValue;
+    bool _isInitialized;
+};
+
+/**
+ * @class BatteryMonitor
+ * @brief Untuk memantau level tegangan baterai melalui pin ADC.
+ */
+class BatteryMonitor
+{
+public:
+    BatteryMonitor(int pin);
+    void begin();
+    float getBatteryLevel(); // Mengembalikan level baterai (misal: 0-100%)
+
+private:
+    int _pin;
+};
+
+/**
+ * @class BuzzerModule
+ * @brief Untuk mengontrol buzzer.
+ */
+class BuzzerModule
+{
+public:
+    BuzzerModule(int pin);
+    void begin();
+    void buzz(int freq, int duration);
+    void playNotification(); // Memainkan suara notifikasi standar
+
+private:
+    int _pin;
+};
+
+/**
+ * @class ButtonMonitor
+ * @brief Untuk memantau tombol dengan logika debouncing.
+ */
+class ButtonMonitor
+{
+public:
+    ButtonMonitor(int pin1, int pin2);
+    void check(); // Harus dipanggil secara berkala di dalam loop/task
+    bool isButton1Pressed();
+    bool isButton2Pressed();
+
+private:
+    int _pin1, _pin2;
+    // Variabel untuk state dan debouncing
+    unsigned long _lastDebounceTime1 = 0;
+    unsigned long _lastDebounceTime2 = 0;
+    bool _lastButtonState1 = HIGH;
+    bool _lastButtonState2 = HIGH;
+    bool _buttonState1 = HIGH;
+    bool _buttonState2 = HIGH;
+    bool _button1Pressed = false;
+    bool _button2Pressed = false;
+    const unsigned long DEBOUNCE_DELAY = 50;
 };
 
 #endif // UTILS_H
