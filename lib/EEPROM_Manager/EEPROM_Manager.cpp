@@ -1,5 +1,6 @@
 #include "EEPROM_Manager.h"
 #include <Wire.h>
+#include <RTClib.h>
 
 EEPROM_Manager::EEPROM_Manager() {}
 
