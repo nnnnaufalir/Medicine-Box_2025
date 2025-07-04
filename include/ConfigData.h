@@ -2,8 +2,8 @@
 #define CONFIG_DATA_H
 
 #include <Arduino.h>
-#include "Schedule_Manager.h" // Diperlukan untuk struct MedicationSchedule
-#include "KNN_Processor.h"    // Diperlukan untuk struct KNNDataPoint
+#include "Schedule_Manager/Schedule_Manager.h" // Diperlukan untuk struct MedicationSchedule
+#include "KNN_Processor.h"                     // Diperlukan untuk struct KNNDataPoint
 
 // Struktur data utama untuk menyimpan semua konfigurasi perangkat.
 // Ini akan menjadi "cetakan" untuk data yang disimpan di EEPROM.
