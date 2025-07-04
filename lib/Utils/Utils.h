@@ -4,24 +4,30 @@
 #include <Arduino.h>
 
 /**
+ * @class WiFi_Manager (BARU)
+ * @brief Untuk mengelola konektivitas WiFi dalam mode Access Point.
+ */
+class WiFi_Manager
+{
+public:
+    WiFi_Manager(const char *ssid);
+    void startAPMode();
+
+private:
+    const char *_ssid;
+};
+
+/**
  * @class EMAFilter
- * @brief Sebuah template untuk filter Exponential Moving Average.
- * Berguna untuk memperhalus data sensor yang berfluktuasi.
+ * @brief Template untuk filter Exponential Moving Average.
  */
 template <typename T>
 class EMAFilter
 {
 public:
-    // Konstruktor dengan faktor alpha (0 < alpha < 1)
     EMAFilter(float alpha);
-
-    // Memperbarui filter dengan nilai baru dan mengembalikan nilai yang sudah difilter
     T update(T newValue);
-
-    // Mendapatkan nilai terfilter terakhir tanpa memperbarui
     T getValue() const;
-
-    // Mereset filter
     void reset();
 
 private:
@@ -32,14 +38,14 @@ private:
 
 /**
  * @class BatteryMonitor
- * @brief Untuk memantau level tegangan baterai melalui pin ADC.
+ * @brief Untuk memantau level tegangan baterai.
  */
 class BatteryMonitor
 {
 public:
     BatteryMonitor(int pin);
     void begin();
-    float getBatteryLevel(); // Mengembalikan level baterai (misal: 0-100%)
+    float getBatteryLevel();
 
 private:
     int _pin;
@@ -55,36 +61,15 @@ public:
     BuzzerModule(int pin);
     void begin();
     void buzz(int freq, int duration);
-    void playNotification(); // Memainkan suara notifikasi standar
+    void playNotification();
 
 private:
     int _pin;
 };
 
 /**
- * @class ButtonMonitor
- * @brief Untuk memantau tombol dengan logika debouncing.
+ * @class ButtonMonitor (DIHAPUS)
+ * @brief Deklarasi untuk kelas ButtonMonitor telah dihapus.
  */
-class ButtonMonitor
-{
-public:
-    ButtonMonitor(int pin1, int pin2);
-    void check(); // Harus dipanggil secara berkala di dalam loop/task
-    bool isButton1Pressed();
-    bool isButton2Pressed();
-
-private:
-    int _pin1, _pin2;
-    // Variabel untuk state dan debouncing
-    unsigned long _lastDebounceTime1 = 0;
-    unsigned long _lastDebounceTime2 = 0;
-    bool _lastButtonState1 = HIGH;
-    bool _lastButtonState2 = HIGH;
-    bool _buttonState1 = HIGH;
-    bool _buttonState2 = HIGH;
-    bool _button1Pressed = false;
-    bool _button2Pressed = false;
-    const unsigned long DEBOUNCE_DELAY = 50;
-};
 
 #endif // UTILS_H
