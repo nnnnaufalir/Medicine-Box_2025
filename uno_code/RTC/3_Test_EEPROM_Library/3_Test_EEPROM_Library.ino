@@ -33,20 +33,20 @@ void setup() {
   
   uint16_t memoryAddress = 0;
 
-  // // --- Writing the entire struct to EEPROM ---
-  // Serial.println("Writing struct to EEPROM...");
-  // Serial.print(" -> Calibration Factor: ");
-  // Serial.println(dataToWrite.calibrationFactor, 3);
-  // Serial.print(" -> Medicine Count: ");
-  // Serial.println(dataToWrite.medicineCount);
+  // --- Writing the entire struct to EEPROM ---
+  Serial.println("Writing struct to EEPROM...");
+  Serial.print(" -> Calibration Factor: ");
+  Serial.println(dataToWrite.calibrationFactor, 3);
+  Serial.print(" -> Medicine Count: ");
+  Serial.println(dataToWrite.medicineCount);
   
-  // i2cStat = eeprom.write(memoryAddress, (byte*)&dataToWrite, sizeof(dataToWrite));
-  // if (i2cStat != 0) {
-  //   Serial.print("ERROR during write, status = ");
-  //   Serial.println(i2cStat);
-  // } else {
-  //   Serial.println("Write complete.");
-  // }
+  i2cStat = eeprom.write(memoryAddress, (byte*)&dataToWrite, sizeof(dataToWrite));
+  if (i2cStat != 0) {
+    Serial.print("ERROR during write, status = ");
+    Serial.println(i2cStat);
+  } else {
+    Serial.println("Write complete.");
+  }
   
   // Serial.println("------------------------------------");
   // delay(1000);
