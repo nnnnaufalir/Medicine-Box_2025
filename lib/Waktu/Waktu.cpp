@@ -1,5 +1,5 @@
 #include "Waktu.h"
-#include "Config/AppConfig.h"
+#include "AppConfig.h"
 #include <Wire.h>
 
 // Membuat objek RTC yang akan digunakan di dalam modul ini

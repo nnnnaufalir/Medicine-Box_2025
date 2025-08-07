@@ -28,10 +28,6 @@ const uint8_t EEPROM_ADDRESS = 0x57;
 // --- Konfigurasi Sistem ---
 const long SERIAL_BAUD_RATE = 115200;
 
-// --- Konfigurasi Jaringan (Web Server) ---
-const char *WIFI_SSID = "KotakObat_ESP32";
-const char *WIFI_PASSWORD = "password123";
-
 // --- Konfigurasi Monitor Baterai ---
 const float R1 = 1000.0;
 const float R2 = 3300.0;

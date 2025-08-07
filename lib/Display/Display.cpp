@@ -1,7 +1,7 @@
 #include "Display.h"
-#include "Config/AppConfig.h"
-#include "Waktu/Waktu.h"
-#include "Penyimpanan/Penyimpanan.h"
+#include "AppConfig.h"
+#include "Waktu.h"
+#include "Penyimpanan.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <SPI.h>

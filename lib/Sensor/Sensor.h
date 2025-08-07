@@ -1,6 +1,8 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
+#include <Arduino.h>
+
 /**
  * @brief Menginisialisasi sensor HX711 dan melakukan kalibrasi drift awal.
  * Fungsi ini harus dipanggil sekali sebelum scheduler RTOS dimulai.

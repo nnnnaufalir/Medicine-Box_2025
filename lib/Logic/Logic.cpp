@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "Logic.h"
-#include "Config/AppConfig.h"
-#include "Waktu/Waktu.h"
-#include "Penyimpanan/Penyimpanan.h"
+#include "AppConfig.h"
+#include "Waktu.h"
+#include "Penyimpanan.h"
 
 // --- Deklarasi Variabel Global dari main.cpp ---
 extern volatile int g_pill_count;

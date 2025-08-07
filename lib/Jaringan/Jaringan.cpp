@@ -1,10 +1,13 @@
 #include "Jaringan.h"
-#include "Config/AppConfig.h"
-#include "Penyimpanan/Penyimpanan.h"
+#include "AppConfig.h"
+#include "Penyimpanan.h"
 #include "server_index.h"
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+
+const char *WIFI_SSID = "KotakObat_ESP32";
+const char *WIFI_PASSWORD = "password123";
 
 // Membuat objek server
 AsyncWebServer server(80);

@@ -1,5 +1,5 @@
 #include "Penyimpanan.h"
-#include "Config/AppConfig.h"
+#include "AppConfig.h"
 #include <Wire.h>
 #include <extEEPROM.h>
 

@@ -1,5 +1,5 @@
 #include "Sensor.h"
-#include "Config/AppConfig.h" // Mengambil pinout dan konstanta dari satu tempat
+#include "AppConfig.h" // Mengambil pinout dan konstanta dari satu tempat
 #include "HX711.h"
 
 // --- Deklarasi Variabel Global dari main.cpp ---

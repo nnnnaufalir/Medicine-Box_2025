@@ -22,7 +22,7 @@ public:
 
 // --- [KONFIGURASI OPTIMAL] ---
 EMAFilter raw_filter(0.16);
-const int JUMLAH_KELAS = 26;
+const int JUMLAH_KELAS = 43;
 const int SAMPEL_PER_KELAS = 11;
 const float RANGE_MULTIPLIER = 1.2;
 
